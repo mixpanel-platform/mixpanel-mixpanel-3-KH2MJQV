@@ -44,7 +44,7 @@ function main() {
   }).groupBy(["properties.$country_code"], mixpanel.reducer.count())
   .map(function(user) {
     return {
-      "key": ios3[user.key[0]] ? ios3[user.key[0]] : "Other",
+      "key": ios3[user.key[0]],
       "doc_count": user.value,
       "ios": user.key[0]
     }
@@ -54,7 +54,9 @@ function main() {
         
         <script>
             // globals used in graph
+            console.log(window);
             var mapdata = {};
+            var mp_report_url = window.document.referrer.split('/mpplatform')[0];
             var palette = ['#009933','#669900','#99cc00','#cccc00','#c7dc09','#edf933','#ffcc00', '#ff9933', '#ff6600','#ff5050'];
             var width = 960, height = 960;
             var minDocCount = 0, quantiles = {};
@@ -135,10 +137,12 @@ function main() {
                     for(var idx=0; idx < data.aggregations.world_map.buckets.length; idx++) {
                         var cCode = data.aggregations.world_map.buckets[idx].key.toUpperCase();
                         var doc_count = data.aggregations.world_map.buckets[idx].doc_count;
+                        var ios2 = data.aggregations.world_map.buckets[idx].ios;
                         for(var wdx=0; wdx < world.objects.subunits.geometries.length; wdx++) {
                             var cName = world.objects.subunits.geometries[wdx].id.toUpperCase();
                             if (cCode === cName) {
                                 world.objects.subunits.geometries[wdx].properties.doc_count = doc_count;
+                                world.objects.subunits.geometries[wdx].properties.ios = ios2;
                             }
                         }
                     }
@@ -189,10 +193,25 @@ function main() {
                 d3.selectAll('.subunit.ca'+datum.id)
                     .style('fill', heatColor(datum));
             }
+            
+            function send_to_explore(country_id) {
+              if(country_id){
+                var mp_expore = mp_report_url + 
+                "/explore/#list/filter:(conjunction:and,filters:!((dropdown_tab_index:1,filter:(operand:" + 
+                country_id + 
+                ",operator:in),property:(name:'$country_code',no_second_icon:!t,source:user,type:string)" +
+                ",selected_property_type:string,type:string)))";
+                
+                window.open(mp_expore);
+                }
+            }
 
             function coutryclicked(datum, index) {
                 //filter event for this country should be applied here
                 console.log('coutryclicked datum', datum);
+                if(datum.properties.ios){
+                  send_to_explore(datum.properties.ios);
+                }
             }
             function heatColor(d) {
                 if (quantiles['0.95'] === 0 && minDocCount === 0) return '#F0F0F0';
