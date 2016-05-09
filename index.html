@@ -40,8 +40,10 @@
 function main() {
   return People(
   ).filter(function(user){
+    console.log(user.properties.$country_code),
     return user.properties.$country_code;
-  }).groupBy(["properties.$country_code"], mixpanel.reducer.count())
+  })
+  .groupBy(["properties.$country_code"], mixpanel.reducer.count())
   .map(function(user) {
     return {
       "key": ios3[user.key[0]] ? ios3[user.key[0]] : "Other",
@@ -117,7 +119,7 @@ function main() {
             }
             
             var script = $('#cq').html();
-            console.log(script);
+            //console.log(script);
             script = $.trim(script);
             MP.api.jql(script).done(function(results) {
               cqResult = results;
