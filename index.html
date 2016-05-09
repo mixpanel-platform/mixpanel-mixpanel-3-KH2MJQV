@@ -40,7 +40,6 @@
 function main() {
   return People(
   ).filter(function(user){
-    console.log(user.properties.$country_code),
     return user.properties.$country_code;
   })
   .groupBy(["properties.$country_code"], mixpanel.reducer.count())
